@@ -3,6 +3,7 @@ name: Autonomous Demo Generator
 on:
   push:
     paths:
+      - ".github/workflows/demo-autogen.yml"
       - "app/**"
       - "components/**"
       - "lib/**"
