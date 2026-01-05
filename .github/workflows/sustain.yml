@@ -32,8 +32,20 @@ jobs:
       - name: Verify canon/ledger integrity (repo export)
         run: pnpm run verify:canon
 
+      - name: Security audit report (JSON)
+        run: pnpm audit --json > audit-report.json
+        continue-on-error: true
+
       - name: Security audit (high)
         run: pnpm audit --audit-level=high
+
+      - name: Upload audit report artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pnpm-audit-report
+          path: audit-report.json
+          if-no-files-found: warn
 
       - name: Health check
         run: pnpm run health:check
