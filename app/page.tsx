@@ -4,6 +4,7 @@ import BickfordKernel from "@/app/components/BickfordKernel";
 import AutonomousEnvironmentCreator from "@/app/components/AutonomousEnvironmentCreator";
 import FilingInput from "@/app/components/FilingInput";
 import UnifiedChatbox from "@/app/components/UnifiedChatbox";
+import BickfordConsole from "@/app/components/BickfordConsole";
 
 export default function Home() {
   return (
@@ -17,6 +18,7 @@ export default function Home() {
 
       <section className="grid gap-6 md:grid-cols-2">
         <div className="space-y-6">
+          <BickfordConsole />
           <BickfordKernel />
           <AutonomousEnvironmentCreator />
           <FilingInput />
