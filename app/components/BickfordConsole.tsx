@@ -1,4 +1,4 @@
-// components/BickfordConsole.tsx
+// app/components/BickfordConsole.tsx
 "use client";
 
 import { useState } from "react";
@@ -6,48 +6,43 @@ import { useState } from "react";
 export default function BickfordConsole() {
   const [intent, setIntent] = useState("");
   const [log, setLog] = useState<string[]>([]);
-  const [plan, setPlan] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [executionId, setExecutionId] = useState<string | null>(null);
 
-  async function planIntent() {
+  async function executeIntent() {
     setLoading(true);
+    setLog([]);
     try {
-      const res = await fetch("/api/bickford/plan", {
+      setLog(l => [...l, `→ Starting execution...`]);
+      
+      const res = await fetch("/api/bickford/execute", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ intent }),
       });
+      
       const data = await res.json();
+      
       if (res.ok) {
-        setPlan(data);
-      } else {
-        setLog(l => [...l, `Error: ${data?.error || 'Unknown error occurred'}`]);
-      }
-    } catch (error: any) {
-      setLog(l => [...l, `Error: ${error.message}`]);
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function executePlan() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/bickford/execute", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
-      });
-      const out = await res.json();
-      if (res.ok) {
-        setLog(l => [...l, `✓ ${out.summary}`, out.deployUrl ? `→ ${out.deployUrl}` : ""]);
-        setPlan(null);
+        setExecutionId(data.executionId);
+        setLog(l => [
+          ...l,
+          `✓ Execution complete`,
+          `  Summary: ${data.summary}`,
+          `  Files changed: ${data.filesChanged}`,
+          `  Commit: ${data.commitSha?.substring(0, 7)}`,
+          data.deployUrl ? `  Deploy URL: ${data.deployUrl}` : "",
+          `  Execution ID: ${data.executionId}`,
+        ].filter(Boolean));
         setIntent("");
       } else {
-        setLog(l => [...l, `Error: ${out?.error || 'Unknown error occurred'}`]);
+        setLog(l => [...l, `✗ Error: ${data?.error || 'Unknown error occurred'}`]);
+        if (data.executionId) {
+          setExecutionId(data.executionId);
+        }
       }
     } catch (error: any) {
-      setLog(l => [...l, `Error: ${error.message}`]);
+      setLog(l => [...l, `✗ Error: ${error.message}`]);
     } finally {
       setLoading(false);
     }
@@ -67,27 +62,12 @@ export default function BickfordConsole() {
       />
 
       <button 
-        onClick={planIntent}
+        onClick={executeIntent}
         disabled={loading || !intent.trim()}
         className="mt-2 rounded bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700 disabled:bg-zinc-300"
       >
-        {loading ? "Planning..." : "Plan"}
+        {loading ? "Executing..." : "Execute"}
       </button>
-
-      {plan && (
-        <div className="mt-4 rounded border border-zinc-300 bg-zinc-50 p-3">
-          <pre className="mb-3 overflow-auto text-xs">
-            {JSON.stringify(plan, null, 2)}
-          </pre>
-          <button 
-            onClick={executePlan}
-            disabled={loading}
-            className="rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:bg-zinc-300"
-          >
-            {loading ? "Executing..." : "Execute"}
-          </button>
-        </div>
-      )}
 
       {log.length > 0 && (
         <div className="mt-4 rounded border border-zinc-200 bg-zinc-50 p-3">
@@ -95,6 +75,19 @@ export default function BickfordConsole() {
           <pre className="overflow-auto text-xs text-zinc-700 whitespace-pre-wrap">
             {log.join("\n")}
           </pre>
+        </div>
+      )}
+      
+      {executionId && (
+        <div className="mt-2 text-xs text-zinc-500">
+          <a 
+            href={`/api/bickford/ledger/${executionId}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline"
+          >
+            View full execution ledger →
+          </a>
         </div>
       )}
     </div>

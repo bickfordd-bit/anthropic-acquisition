@@ -7,8 +7,19 @@ export const runtime = "nodejs";
 export async function POST(req: NextRequest) {
   try {
     const { intent } = await req.json();
-    const plan = await planFromIntent(intent);
-    return NextResponse.json(plan);
+    
+    if (!intent || typeof intent !== "string") {
+      return NextResponse.json({ error: "Intent is required" }, { status: 400 });
+    }
+    
+    const result = await planFromIntent(intent);
+    
+    return NextResponse.json({
+      plan: result.plan,
+      canonDecision: result.canonDecision,
+      canonRationale: result.canonRationale,
+      executionId: result.executionId,
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 400 });
   }
