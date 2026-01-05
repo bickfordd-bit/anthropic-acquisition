@@ -14,8 +14,8 @@ prisma/*.db-journal
 bickford-acquisition-data-room/
 
 # CI/demo artifacts
-demo/
-growth/
+/demo/
+/growth/
 
 # Netlify
 .netlify/
