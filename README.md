@@ -66,6 +66,12 @@ Required for ledger-backed features:
 Recommended (production):
 
 - `BICKFORD_API_TOKEN` — bearer token for most write/compute API routes (e.g. `/api/execute`, `/api/chat/*`, `/api/ledger/*`). Generate with `openssl rand -hex 32`.
+
+Founder-only execution (for `/api/bickford/execute`):
+
+- `BICKFORD_EXECUTION_ENABLED` — must be `true` or execution is blocked.
+- `BICKFORD_FOUNDER_KEY` — must be exactly `ALLOW_EXECUTION_V1` or execution is blocked.
+	- On Netlify, ensure this is set for the deploy contexts you use (Production, Deploy Previews, Branch deploys, etc.).
 - `BICKFORD_PUBLIC_API` — set `true` only if you intentionally want unauthenticated access in production.
 
 Self-editing from the deployed URL (recommended on Netlify):
