@@ -24,10 +24,32 @@ jobs:
     permissions:
       contents: write
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres -d postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/postgres?schema=public
+      DEMO_MODE: "true"
+      DATA_ROOM_TOKEN: "demo-token"
+
     steps:
       - uses: actions/checkout@v4
 
       - uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
       - uses: actions/setup-node@v4
         with:
@@ -40,20 +62,14 @@ jobs:
       - name: Install Playwright Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Prepare SQLite DB
+      - name: Prepare DB
         run: pnpm run prisma:migrate
-        env:
-          DATABASE_URL: file:./ci.db
 
       - name: Build
         run: pnpm run build
 
       - name: Start app
         run: pnpm run start &
-        env:
-          DATABASE_URL: file:./ci.db
-          DEMO_MODE: "true"
-          DATA_ROOM_TOKEN: "demo-token"
 
       - name: Wait for app to be healthy
         run: |
@@ -74,8 +90,6 @@ jobs:
         run: pnpm run demo:run
         env:
           BICKFORD_BASE_URL: http://localhost:3000
-          DEMO_MODE: "true"
-          DATA_ROOM_TOKEN: "demo-token"
 
       - name: Record demo
         run: pnpm run demo:record
