@@ -20,3 +20,6 @@ growth/
 # Netlify
 .netlify/
 .netlify/state.json
+
+# Bickford ledger
+bickford-ledger.jsonl
