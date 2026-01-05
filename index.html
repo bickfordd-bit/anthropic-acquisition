@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bickford → Anthropic | Acquisition Overview</title>
+  <style>
+    :root {
+      --bg: #0b0d12;
+      --card: #121622;
+      --accent: #5eead4;
+      --muted: #9aa3b2;
+      --text: #e6e9ef;
+      --danger: #fb7185;
+      --success: #4ade80;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Inter, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #1b233a, var(--bg));
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: auto;
+      padding: 48px 24px 96px;
+    }
+
+    h1 {
+      font-size: 2.6rem;
+      margin-bottom: 12px;
+      letter-spacing: -0.02em;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      margin: 0;
+    }
+
+    p {
+      color: var(--muted);
+      margin-top: 8px;
+    }
+
+    .hero {
+      margin-bottom: 48px;
+    }
+
+    .badge {
+      display: inline-block;
+      background: rgba(94, 234, 212, 0.12);
+      color: var(--accent);
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      margin-bottom: 16px;
+    }
+
+    .cards {
+      display: grid;
+      gap: 20px;
+    }
+
+    details {
+      background: var(--card);
+      border-radius: 14px;
+      padding: 20px 24px;
+      transition: all 0.3s ease;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    details[open] {
+      box-shadow: 0 0 0 1px rgba(94, 234, 212, 0.35);
+    }
+
+    summary {
+      list-style: none;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    summary::-webkit-details-marker { display: none; }
+
+    .value {
+      font-weight: 600;
+      color: var(--accent);
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+
+    .negative { color: var(--danger); }
+    .positive { color: var(--success); }
+
+    .content {
+      margin-top: 16px;
+      color: var(--muted);
+    }
+
+    .timeline {
+      margin-top: 12px;
+      padding-left: 16px;
+      border-left: 2px solid rgba(94, 234, 212, 0.4);
+    }
+
+    .timeline p {
+      margin: 8px 0;
+    }
+
+    .cta {
+      margin-top: 64px;
+      padding: 32px;
+      background: linear-gradient(135deg, rgba(94, 234, 212, 0.15), rgba(94, 234, 212, 0.05));
+      border-radius: 18px;
+      border: 1px solid rgba(94, 234, 212, 0.3);
+    }
+
+    .cta h2 {
+      margin-bottom: 12px;
+    }
+
+    .buttons {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    .btn {
+      padding: 12px 20px;
+      border-radius: 10px;
+      font-weight: 600;
+      text-decoration: none;
+      color: #0b0d12;
+      background: var(--accent);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .btn.secondary {
+      background: transparent;
+      color: var(--accent);
+      border: 1px solid var(--accent);
+    }
+
+    footer {
+      margin-top: 80px;
+      text-align: center;
+      font-size: 0.85rem;
+      color: #6b7280;
+    }
+
+    @media (max-width: 640px) {
+      h1 { font-size: 2rem; }
+      summary { flex-direction: column; align-items: flex-start; }
+      .value { white-space: normal; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+
+    <section class="hero">
+      <span class="badge">Confidential · Executive Review</span>
+      <h1>Hi Dario & Daniela</h1>
+      <p>
+        This is a self-guided overview of the Bickford acquisition opportunity.
+        No slides. No pitch. Just the facts, clearly framed.
+      </p>
+    </section>
+
+    <section class="cards">
+
+      <details>
+        <summary>
+          <h2>1. The Cost of Inaction</h2>
+          <span class="value negative">-$100K–$500K / hour</span>
+        </summary>
+        <div class="content">
+          <p>
+            Today, Anthropic can reason safely — but cannot allow systems to act autonomously
+            in regulated environments.
+          </p>
+          <p>Each week without execution authority:</p>
+          <ul>
+            <li>Enterprise deals stall or churn</li>
+            <li>Regulated markets remain inaccessible</li>
+            <li>Competitors move closer to owning the execution layer</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <h2>2. The Solution</h2>
+          <span class="value positive">Execution Authority</span>
+        </summary>
+        <div class="content">
+          <p>Bickford is an execution authority runtime:</p>
+          <ul>
+            <li>Converts intent → provable, auditable action</li>
+            <li>Enforces policy as executable law</li>
+            <li>Produces a tamper-evident decision ledger</li>
+            <li>Prevents unsafe multi-agent interference by construction</li>
+          </ul>
+          <p>
+            Constitutional AI governs <em>reasoning</em>.
+            Bickford governs <em>action</em>.
+          </p>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <h2>3. The Moat</h2>
+          <span class="value">Compounding Intelligence</span>
+        </summary>
+        <div class="content">
+          <p>Every deployed instance strengthens the system:</p>
+          <ul>
+            <li>More canon → better authorization decisions</li>
+            <li>More ledger history → stronger safety proofs</li>
+            <li>More customers → higher switching costs</li>
+          </ul>
+          <p>This is not a feature moat — it is a structural one.</p>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <h2>4. The Deal Structure</h2>
+          <span class="value">$500M · Milestone-Based</span>
+        </summary>
+        <div class="content">
+          <p>Downside is capped. Upside compounds.</p>
+          <div class="timeline">
+            <p>• $25M at close (option premium)</p>
+            <p>• $25M at 20 customers</p>
+            <p>• $50M at $10M ARR</p>
+            <p>• $400M on strategic value realization</p>
+          </div>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <h2>5. Why Now</h2>
+          <span class="value negative">Window Closing</span>
+        </summary>
+        <div class="content">
+          <p>This capability will exist in the market.</p>
+          <p>
+            The only question is whether Anthropic owns it — or competes against it.
+          </p>
+        </div>
+      </details>
+
+    </section>
+
+    <section class="cta">
+      <h2>Next Step</h2>
+      <p>
+        If this framing resonates, the right next step is a short working conversation
+        focused on architecture, safety boundaries, and integration sequencing.
+      </p>
+      <div class="buttons">
+        <a class="btn" href="mailto:derek@bickfordtechnologies.com">Email Derek</a>
+        <a class="btn secondary" href="tel:+1234567890">Call Derek</a>
+      </div>
+    </section>
+
+    <footer>
+      Bickford Technologies · Confidential Executive Material
+    </footer>
+
+  </div>
+</body>
+</html>
