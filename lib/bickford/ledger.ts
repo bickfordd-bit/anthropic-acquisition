@@ -12,5 +12,7 @@ export function record(entry: any) {
 
 export function read() {
   if (!fs.existsSync(LEDGER)) return [];
-  return fs.readFileSync(LEDGER, "utf-8").trim().split("\n").map(JSON.parse);
+  const content = fs.readFileSync(LEDGER, "utf-8").trim();
+  if (!content) return [];
+  return content.split("\n").map((line) => JSON.parse(line));
 }
