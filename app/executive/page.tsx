@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
 
 function safeParseJson(value: string): unknown {
   try {
@@ -19,23 +20,26 @@ function clampNonNeg(n: number) {
 }
 
 export default async function ExecutivePage() {
+  const hasDatabase = Boolean(process.env.DATABASE_URL);
   const now = new Date();
   const since24h = new Date(now.getTime() - 24 * 60 * 60 * 1000);
   const since1h = new Date(now.getTime() - 60 * 60 * 1000);
 
-  const [last24h, last1h, totals] = await Promise.all([
-    prisma.ledgerEntry.findMany({
-      where: { createdAt: { gte: since24h } },
-      orderBy: { createdAt: "desc" },
-      take: 2000,
-    }),
-    prisma.ledgerEntry.findMany({
-      where: { createdAt: { gte: since1h } },
-      orderBy: { createdAt: "desc" },
-      take: 2000,
-    }),
-    prisma.ledgerEntry.count(),
-  ]);
+  const [last24h, last1h, totals] = hasDatabase
+    ? await Promise.all([
+        prisma.ledgerEntry.findMany({
+          where: { createdAt: { gte: since24h } },
+          orderBy: { createdAt: "desc" },
+          take: 2000,
+        }),
+        prisma.ledgerEntry.findMany({
+          where: { createdAt: { gte: since1h } },
+          orderBy: { createdAt: "desc" },
+          take: 2000,
+        }),
+        prisma.ledgerEntry.count(),
+      ])
+    : [[], [], 0];
 
   const decisionEntries24h = last24h.filter((e) => e.decision === "ALLOW" || e.decision === "DENY");
   const decisionsPerHour = Math.round((decisionEntries24h.length / 24) * 10) / 10;
@@ -91,6 +95,16 @@ export default async function ExecutivePage() {
             Live proof: authorization decisions → prevented harm → recovered value → compliance artifacts.
           </p>
         </div>
+
+        {!hasDatabase ? (
+          <div className="rounded-xl border border-amber-400/30 bg-amber-400/10 p-4 text-sm text-amber-200">
+            <div className="font-medium">Metrics unavailable</div>
+            <div className="mt-1 text-amber-200/80">
+              This environment is missing <span className="font-mono">DATABASE_URL</span>, so ledger-backed metrics are
+              shown as zeros.
+            </div>
+          </div>
+        ) : null}
 
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div className="rounded-xl border border-white/10 bg-white/5 p-5">

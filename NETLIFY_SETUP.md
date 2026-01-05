@@ -15,7 +15,15 @@ This repo is a Next.js app (App Router) and deploys cleanly to Netlify using `@n
 Minimum required:
 
 - `DATA_ROOM_TOKEN`
+
+Required for ledger-backed features (Executive dashboard, canon/ledger writes):
+
 - `DATABASE_URL`
+
+Netlify DB note:
+
+- If you provision **Netlify DB**, Netlify sets `NETLIFY_DATABASE_URL` and `NETLIFY_DATABASE_URL_UNPOOLED` automatically.
+- This repo maps those to `DATABASE_URL` automatically (see `lib/prisma.ts`), so you typically do **not** need to set `DATABASE_URL` manually.
 
 Optional (recommended for full experience):
 

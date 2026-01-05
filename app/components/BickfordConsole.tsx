@@ -1,53 +1,54 @@
-// components/BickfordConsole.tsx
 "use client";
 
 import { useState } from "react";
+import ExecutionLedger from "@/app/components/ExecutionLedger";
 
 export default function BickfordConsole() {
   const [intent, setIntent] = useState("");
   const [log, setLog] = useState<string[]>([]);
-  const [plan, setPlan] = useState<any>(null);
+  const [executionId, setExecutionId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [token, setToken] = useState<string>(() => {
+    if (typeof window === "undefined") return "";
+    return window.localStorage.getItem("bickfordToken") ?? "";
+  });
 
-  async function planIntent() {
-    setLoading(true);
-    try {
-      const res = await fetch("/api/bickford/plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ intent }),
-      });
-      const data = await res.json();
-      if (res.ok) {
-        setPlan(data);
-      } else {
-        setLog(l => [...l, `Error: ${data?.error || 'Unknown error occurred'}`]);
-      }
-    } catch (error: any) {
-      setLog(l => [...l, `Error: ${error.message}`]);
-    } finally {
-      setLoading(false);
-    }
-  }
+  async function execute() {
+    const trimmed = intent.trim();
+    if (!trimmed) return;
 
-  async function executePlan() {
     setLoading(true);
     try {
       const res = await fetch("/api/bickford/execute", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan }),
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { "x-bickford-token": token } : {}),
+        },
+        body: JSON.stringify({ intent: trimmed }),
       });
+
       const out = await res.json();
-      if (res.ok) {
-        setLog(l => [...l, `✓ ${out.summary}`, out.deployUrl ? `→ ${out.deployUrl}` : ""]);
-        setPlan(null);
-        setIntent("");
-      } else {
-        setLog(l => [...l, `Error: ${out?.error || 'Unknown error occurred'}`]);
+      if (!res.ok) {
+        setLog((l) => [...l, `Error: ${out?.error || "Unknown error occurred"}`]);
+        if (out?.executionId) setExecutionId(String(out.executionId));
+        return;
       }
+
+      if (out?.executionId) setExecutionId(String(out.executionId));
+      setLog((l) =>
+        [
+          ...l,
+          `✓ ${out.summary}`,
+          out.sha ? `SHA → ${out.sha}` : "",
+          out.prUrl ? `PR → ${out.prUrl}` : "",
+          out.deployUrl ? `DEPLOY → ${out.deployUrl}` : "",
+          out.mode ? `MODE → ${out.mode}` : "",
+        ].filter(Boolean),
+      );
+      setIntent("");
     } catch (error: any) {
-      setLog(l => [...l, `Error: ${error.message}`]);
+      setLog((l) => [...l, `Error: ${error.message}`]);
     } finally {
       setLoading(false);
     }
@@ -56,6 +57,22 @@ export default function BickfordConsole() {
   return (
     <div className="rounded border border-zinc-200 bg-white p-4 shadow-sm">
       <h2 className="mb-3 text-lg font-semibold">Bickford Console</h2>
+
+      <div className="mb-3">
+        <label className="block text-xs font-medium text-zinc-600">API token (stored locally)</label>
+        <input
+          value={token}
+          onChange={(e) => {
+            const v = e.target.value;
+            setToken(v);
+            try {
+              window.localStorage.setItem("bickfordToken", v);
+            } catch {}
+          }}
+          placeholder="BICKFORD_API_TOKEN"
+          className="mt-1 w-full rounded border border-zinc-300 px-3 py-2 text-sm"
+        />
+      </div>
       
       <textarea
         value={intent}
@@ -67,27 +84,12 @@ export default function BickfordConsole() {
       />
 
       <button 
-        onClick={planIntent}
+        onClick={execute}
         disabled={loading || !intent.trim()}
         className="mt-2 rounded bg-zinc-900 px-4 py-2 text-sm text-white hover:bg-zinc-700 disabled:bg-zinc-300"
       >
-        {loading ? "Planning..." : "Plan"}
+        {loading ? "Executing..." : "Execute"}
       </button>
-
-      {plan && (
-        <div className="mt-4 rounded border border-zinc-300 bg-zinc-50 p-3">
-          <pre className="mb-3 overflow-auto text-xs">
-            {JSON.stringify(plan, null, 2)}
-          </pre>
-          <button 
-            onClick={executePlan}
-            disabled={loading}
-            className="rounded bg-green-600 px-4 py-2 text-sm text-white hover:bg-green-700 disabled:bg-zinc-300"
-          >
-            {loading ? "Executing..." : "Execute"}
-          </button>
-        </div>
-      )}
 
       {log.length > 0 && (
         <div className="mt-4 rounded border border-zinc-200 bg-zinc-50 p-3">
@@ -97,6 +99,12 @@ export default function BickfordConsole() {
           </pre>
         </div>
       )}
+
+      {executionId ? (
+        <div className="mt-4 rounded border border-zinc-200 bg-white p-3">
+          <ExecutionLedger executionId={executionId} />
+        </div>
+      ) : null}
     </div>
   );
 }

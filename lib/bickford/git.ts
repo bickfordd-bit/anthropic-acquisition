@@ -1,10 +1,16 @@
-// lib/bickford/git.ts
 import { execSync } from "child_process";
 
-export function commitAndPush(msg: string) {
-  // Sanitize commit message to prevent command injection
-  const sanitizedMsg = msg.replace(/["\\$`]/g, "\\$&");
-  execSync("git add .");
-  execSync(`git commit -m "${sanitizedMsg}"`);
-  execSync("git push");
+export async function commitAndPush(message: string) {
+  if (process.env.BICKFORD_GIT_ENABLED !== "true") {
+    throw new Error("BICKFORD_GIT_ENABLED is not true; refusing to run git operations");
+  }
+
+  execSync("git add .", { stdio: "inherit" });
+  execSync(`git commit -m ${JSON.stringify(message)}`, { stdio: "inherit" });
+  execSync("git push", { stdio: "inherit" });
+
+  const sha = execSync("git rev-parse HEAD", { stdio: ["ignore", "pipe", "ignore"] })
+    .toString()
+    .trim();
+  return sha;
 }

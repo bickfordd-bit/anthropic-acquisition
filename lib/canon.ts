@@ -1,5 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ANTHROPIC_CANON } from "@/canon/anthropic.canon";
+export { evaluateCanon } from "./canon/index";
+export type { ProposedPlan } from "./canon/core";
 
 export function authorize(intent: string) {
   const normalized = intent.toLowerCase();
