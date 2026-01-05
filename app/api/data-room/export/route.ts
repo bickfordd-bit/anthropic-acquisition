@@ -5,6 +5,7 @@ import crypto from "crypto";
 import archiver from "archiver";
 import { Readable } from "stream";
 import { exportDataRoom } from "../../../../scripts/exportDataRoom";
+import { enforceRateLimit, safeErrorMessage } from "@/lib/apiSecurity";
 
 export const runtime = "nodejs";
 
@@ -42,6 +43,9 @@ async function listFiles(rootDir: string): Promise<string[]> {
 
 export async function GET(req: Request) {
   try {
+    const limited = enforceRateLimit(req, { keyPrefix: "data-room:export", limit: 3, windowMs: 60_000 });
+    if (limited) return limited;
+
     requireAuth(req);
 
     const tmpRoot = await fs.promises.mkdtemp(path.join(os.tmpdir(), "bickford-data-room-"));
@@ -101,6 +105,7 @@ export async function GET(req: Request) {
     });
   } catch (err: any) {
     const status = err?.statusCode ?? 500;
-    return new Response(err?.message ?? "Export failed", { status });
+    const message = status === 401 ? "Unauthorized" : safeErrorMessage(err);
+    return new Response(message, { status });
   }
 }

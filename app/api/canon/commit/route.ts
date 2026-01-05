@@ -6,6 +6,7 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   const body = await req.json();
+
   const ledgerHash = hashObject(body);
 
   const canon = await prisma.canonEntry.create({

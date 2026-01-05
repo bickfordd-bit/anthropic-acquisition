@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { generateAuditPdfBuffer } from "@/lib/auditPdf";
+import { enforceRateLimit, safeErrorMessage } from "@/lib/apiSecurity";
 
 export const runtime = "nodejs";
 
@@ -23,6 +24,9 @@ function requireAuth(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    const limited = enforceRateLimit(req, { keyPrefix: "audit:pdf", limit: 10, windowMs: 60_000 });
+    if (limited) return limited;
+
     requireAuth(req);
 
     const buf = await generateAuditPdfBuffer({ take: 500 });
@@ -38,6 +42,7 @@ export async function GET(req: Request) {
     });
   } catch (err: any) {
     const status = err?.statusCode ?? 500;
-    return new Response(err?.message ?? "Audit PDF export failed", { status });
+    const message = status === 401 ? "Unauthorized" : safeErrorMessage(err);
+    return new Response(message, { status });
   }
 }

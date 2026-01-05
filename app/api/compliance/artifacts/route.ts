@@ -5,6 +5,7 @@ import {
   renderAU3Json,
   renderAU9HashProof,
 } from "@/packages/compliance/src/nistAuditArtifacts";
+import { enforceRateLimit, safeErrorMessage } from "@/lib/apiSecurity";
 
 export const runtime = "nodejs";
 
@@ -28,6 +29,9 @@ function requireAuth(req: Request) {
 
 export async function GET(req: Request) {
   try {
+    const limited = enforceRateLimit(req, { keyPrefix: "compliance:artifacts", limit: 10, windowMs: 60_000 });
+    if (limited) return limited;
+
     requireAuth(req);
 
     const rows = await readLedger(500);
@@ -46,6 +50,7 @@ export async function GET(req: Request) {
     });
   } catch (err: any) {
     const status = err?.statusCode ?? 500;
-    return new Response(err?.message ?? "Compliance artifacts export failed", { status });
+    const message = status === 401 ? "Unauthorized" : safeErrorMessage(err);
+    return new Response(message, { status });
   }
 }

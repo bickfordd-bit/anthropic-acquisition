@@ -1,10 +1,18 @@
 import { prisma } from "@/lib/prisma";
+import { enforceApiAuth, enforceRateLimit, safeErrorMessage } from "@/lib/apiSecurity";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
-export async function GET() {
+export async function GET(req: Request) {
+  const auth = enforceApiAuth(req);
+  if (auth) return auth;
+
+  const limited = enforceRateLimit(req, { keyPrefix: "ledger:stream", limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   const encoder = new TextEncoder();
+  const abortSignal = req.signal;
 
   const stream = new ReadableStream<Uint8Array>({
     async start(controller) {
@@ -19,25 +27,39 @@ export async function GET() {
       });
 
       for (const entry of initial) {
-        send({ ...entry, content: JSON.parse(entry.content) });
+        try {
+          send({ ...entry, content: JSON.parse(entry.content) });
+        } catch {
+          send({ ...entry, content: entry.content });
+        }
       }
 
       let lastTimestamp =
         initial.length > 0 ? new Date(initial[initial.length - 1].createdAt) : new Date(0);
 
       // poll loop
-      while (true) {
-        const entries = await prisma.ledgerEntry.findMany({
-          where: { createdAt: { gt: lastTimestamp } },
-          orderBy: { createdAt: "asc" },
-        });
+      try {
+        while (!abortSignal.aborted) {
+          const entries = await prisma.ledgerEntry.findMany({
+            where: { createdAt: { gt: lastTimestamp } },
+            orderBy: { createdAt: "asc" },
+          });
 
-        for (const entry of entries) {
-          send({ ...entry, content: JSON.parse(entry.content) });
-          lastTimestamp = new Date(entry.createdAt);
+          for (const entry of entries) {
+            try {
+              send({ ...entry, content: JSON.parse(entry.content) });
+            } catch {
+              send({ ...entry, content: entry.content });
+            }
+            lastTimestamp = new Date(entry.createdAt);
+          }
+
+          await new Promise((r) => setTimeout(r, 500));
         }
-
-        await new Promise((r) => setTimeout(r, 500));
+      } catch (e) {
+        send({ error: safeErrorMessage(e) });
+      } finally {
+        controller.close();
       }
     },
     cancel() {

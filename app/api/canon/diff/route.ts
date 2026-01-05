@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { enforceApiAuth, enforceRateLimit } from "@/lib/apiSecurity";
 
 export const runtime = "nodejs";
 
@@ -39,7 +40,13 @@ function changedKeys(prev: unknown, curr: unknown) {
   return changed.sort();
 }
 
-export async function GET() {
+export async function GET(req: Request) {
+  const auth = enforceApiAuth(req);
+  if (auth) return auth;
+
+  const limited = enforceRateLimit(req, { keyPrefix: "canon:diff", limit: 30, windowMs: 60_000 });
+  if (limited) return limited;
+
   const canon = await prisma.canonEntry.findMany({
     orderBy: { promotedAt: "asc" },
   });

@@ -3,6 +3,7 @@ import path from "path";
 
 import { prisma } from "@/lib/prisma";
 import { appendLedger } from "@/lib/ledger";
+import { enforceRateLimit, safeErrorMessage } from "@/lib/apiSecurity";
 
 export const runtime = "nodejs";
 
@@ -45,6 +46,9 @@ function triggerKeyToLabel(key: TriggerKey) {
 
 export async function POST(req: Request) {
   try {
+    const limited = enforceRateLimit(req, { keyPrefix: "outreach:trigger", limit: 3, windowMs: 60_000 });
+    if (limited) return limited;
+
     requireAuth(req);
 
     const outDir = path.join(process.cwd(), "demo", "outreach");
@@ -175,6 +179,7 @@ export async function POST(req: Request) {
     });
   } catch (err: any) {
     const status = err?.statusCode ?? 500;
-    return new Response(err?.message ?? "Outreach generation failed", { status });
+    const message = status === 401 ? "Unauthorized" : safeErrorMessage(err);
+    return new Response(message, { status });
   }
 }
