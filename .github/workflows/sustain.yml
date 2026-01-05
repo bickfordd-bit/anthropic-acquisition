@@ -1,0 +1,58 @@
+name: Sustainment Health Check
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch:
+
+concurrency:
+  group: sustain
+  cancel-in-progress: true
+
+jobs:
+  sustain:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify canon/ledger integrity (repo export)
+        run: pnpm run verify:canon
+
+      - name: Security audit (high)
+        run: pnpm audit --audit-level=high
+
+      - name: Health check
+        run: pnpm run health:check
+        env:
+          BICKFORD_BASE_URL: ${{ secrets.BICKFORD_BASE_URL }}
+          HEALTHCHECK_URL: ${{ secrets.HEALTHCHECK_URL }}
+          HEALTHCHECK_TIMEOUT_MS: 12000
+
+      - name: Verify deployed data-room export (if configured)
+        run: pnpm run data-room:verify-remote
+        env:
+          BICKFORD_BASE_URL: ${{ secrets.BICKFORD_BASE_URL }}
+          DATA_ROOM_TOKEN: ${{ secrets.DATA_ROOM_TOKEN }}
+          REQUIRE_REMOTE: ${{ secrets.BICKFORD_BASE_URL != '' && secrets.DATA_ROOM_TOKEN != '' && 'true' || 'false' }}
+
+      - name: Restart Railway service (on failure)
+        if: failure() && secrets.RAILWAY_TOKEN != ''
+        run: |
+          npm i -g @railway/cli
+          railway service restart
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

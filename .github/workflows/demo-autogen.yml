@@ -1,0 +1,98 @@
+name: Autonomous Demo Generator
+
+on:
+  push:
+    paths:
+      - "app/**"
+      - "components/**"
+      - "lib/**"
+      - "canon/**"
+      - "scripts/**"
+      - "prisma/**"
+      - "package.json"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+
+concurrency:
+  group: demo-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  demo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Prepare SQLite DB
+        run: pnpm run prisma:migrate
+        env:
+          DATABASE_URL: file:./ci.db
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Start app
+        run: pnpm run start &
+        env:
+          DATABASE_URL: file:./ci.db
+          DEMO_MODE: "true"
+          DATA_ROOM_TOKEN: "demo-token"
+
+      - name: Wait for app to be healthy
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://localhost:3000/api/health > /dev/null; then
+              echo "✅ App is healthy"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "❌ App did not become healthy in time"
+          exit 1
+
+      - name: Generate demo script
+        run: pnpm run demo:generate
+
+      - name: Run demo scenario
+        run: pnpm run demo:run
+        env:
+          BICKFORD_BASE_URL: http://localhost:3000
+          DEMO_MODE: "true"
+          DATA_ROOM_TOKEN: "demo-token"
+
+      - name: Record demo
+        run: pnpm run demo:record
+        env:
+          BICKFORD_BASE_URL: http://localhost:3000
+
+      - name: Publish demo (artifact)
+        run: pnpm run demo:publish
+        env:
+          PUBLISH_GITHUB_RELEASE: "true"
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Upload demo artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: demo-artifacts
+          path: |
+            demo/**
+          if-no-files-found: error

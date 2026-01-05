@@ -1,0 +1,43 @@
+{
+    "template": {
+        "name": "bickford-autonomous-environment",
+        "version": "1.0.0",
+        "description": "Meta-template for generating new Bickford environments from intent (Canon + OPTR + Ledger + Compliance)",
+        "author": "Bickford Technologies",
+        "license": "MIT"
+    },
+    "capabilities": {
+        "execution_authority": true,
+        "canon_enforcement": true,
+        "multi_agent_arbitration": true,
+        "optr_scoring": true,
+        "ledger_recording": true,
+        "compliance_automation": true,
+        "demo_generation": true,
+        "autonomous_deployment": true,
+        "github_integration": true,
+        "netlify_deployment": true
+    },
+    "lifecycle": {
+        "phases": [
+            "intent_capture",
+            "repo_creation",
+            "structure_generation",
+            "dependency_installation",
+            "canon_initialization",
+            "ledger_setup",
+            "deployment_config",
+            "ci_cd_setup",
+            "demo_recording",
+            "compliance_export",
+            "autonomous_monitoring",
+            "outreach_automation"
+        ]
+    },
+    "intent_driven": {
+        "enabled": true,
+        "input_source": "bickford_web_ui",
+        "execution_mode": "autonomous",
+        "approval_required": false
+    }
+}

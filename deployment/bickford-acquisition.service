@@ -1,0 +1,19 @@
+[Unit]
+Description=Bickford Acquisition Demo
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+WorkingDirectory=/var/www/anthropic-acquisition
+ExecStart=/usr/bin/pnpm start
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+Environment=NODE_ENV=production
+EnvironmentFile=/var/www/anthropic-acquisition/.env
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,22 @@
+node_modules/
+.next/
+*.tsbuildinfo
+dev.db
+*.db
+*.db-journal
+prisma/*.db
+prisma/*.db-journal
+.env
+.env.local
+.env.*.local
+
+# Generated acquisition export artifacts
+bickford-acquisition-data-room/
+
+# CI/demo artifacts
+demo/
+growth/
+
+# Netlify
+.netlify/
+.netlify/state.json

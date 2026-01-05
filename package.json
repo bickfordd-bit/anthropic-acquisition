@@ -1,0 +1,87 @@
+{
+    "name": "anthropic-acquisition",
+    "private": true,
+    "version": "0.0.0",
+    "type": "module",
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "dev": "next dev",
+        "build": "prisma generate && next build",
+        "start": "next start",
+        "lint": "eslint .",
+        "typecheck": "tsc --noEmit --incremental false",
+        "auto-deploy": "./scripts/autonomous-deploy.sh",
+        "auto-heal": "./scripts/auto-heal.sh",
+        "validate-env": "bash ./scripts/validate-env.sh",
+        "deploy": "pnpm run validate-env && pnpm run auto-deploy",
+        "monitor": "pnpm run auto-heal",
+        "deployment:status": "./scripts/deployment-status.sh",
+        "netlify:login": "pnpm exec netlify login",
+        "netlify:init": "pnpm exec netlify init",
+        "netlify:build": "pnpm run build",
+        "netlify:preview": "pnpm exec netlify deploy --build",
+        "netlify:deploy": "pnpm exec netlify deploy --build --prod",
+        "netlify:status": "pnpm exec netlify status",
+        "netlify:open": "pnpm exec netlify open:site",
+        "deploy:netlify": "./scripts/netlify-auto-deploy.sh",
+        "verify:canon": "tsx scripts/verify-canon.ts",
+        "health:check": "tsx scripts/health-check.ts",
+        "growth:metrics": "tsx scripts/growth-metrics.ts",
+        "demo:generate": "tsx scripts/demo/generate-script.ts",
+        "demo:run": "tsx scripts/demo/run-demo.ts",
+        "demo:record": "tsx scripts/demo/record.ts",
+        "demo:publish": "tsx scripts/demo/publish.ts",
+        "demo:full": "./scripts/demo/record-and-publish.sh",
+        "data-room:export": "prisma generate && tsx scripts/exportDataRoom.ts",
+        "data-room:verify": "prisma generate && tsx scripts/verifyDataRoom.ts",
+        "data-room:verify-remote": "tsx scripts/verifyRemoteDataRoom.ts",
+        "data-room:package": "prisma generate && tsx scripts/packageDataRoom.ts",
+        "compliance:export": "prisma generate && tsx scripts/exportComplianceArtifacts.ts",
+        "prisma:generate": "prisma generate",
+        "prisma:migrate": "prisma db push",
+        "prisma:studio": "prisma studio",
+        "create:env": "pnpm exec tsx templates/bickford-autonomous-env/cli.ts create",
+        "template:test": "pnpm exec tsx templates/bickford-autonomous-env/cli.ts create \"Test environment\""
+    },
+    "dependencies": {
+        "@anthropic-ai/sdk": "^0.71.2",
+        "@prisma/client": "^5.22.0",
+        "archiver": "^7.0.1",
+        "next": "^15.1.3",
+        "pdfkit": "^0.17.2",
+        "react": "^19.0.0",
+        "react-dom": "^19.0.0"
+    },
+    "devDependencies": {
+        "@netlify/plugin-nextjs": "^5.0.0",
+        "@types/archiver": "^6.0.3",
+        "@types/node": "^22.10.7",
+        "@types/pdfkit": "^0.17.4",
+        "@types/react": "^19.0.8",
+        "@types/react-dom": "^19.0.3",
+        "autoprefixer": "^10.4.20",
+        "eslint": "^8.57.1",
+        "eslint-config-next": "^15.1.3",
+        "netlify-cli": "^17.0.0",
+        "postcss": "^8.4.49",
+        "playwright": "^1.52.0",
+        "prisma": "^5.22.0",
+        "tailwindcss": "^3.4.17",
+        "tsx": "^4.19.2",
+        "typescript": "^5.7.3"
+    },
+    "pnpm": {
+        "onlyBuiltDependencies": [
+            "@parcel/watcher",
+            "esbuild",
+            "netlify-cli",
+            "sharp",
+            "unix-dgram"
+        ],
+        "overrides": {
+            "qs": "^6.14.1"
+        }
+    }
+}

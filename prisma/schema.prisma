@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model LedgerEntry {
+  id        String   @id @default(cuid())
+  type      String   // intent | action | canon | deny
+  content   String
+  intent    String?
+  decision  String?
+  rationale String?
+  actor     String?
+  systemInitiated Boolean @default(false)
+  prevHash  String?
+  hash      String
+  createdAt DateTime @default(now())
+}
+
+model CanonEntry {
+  id         String   @id @default(cuid())
+  title      String
+  content    String
+  promotedAt DateTime @default(now())
+  ledgerHash String
+}

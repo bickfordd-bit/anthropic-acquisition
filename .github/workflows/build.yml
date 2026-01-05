@@ -1,0 +1,63 @@
+name: Build, Verify, Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Verify canon/data-room integrity
+        run: pnpm run verify:canon
+
+      - name: Verify data-room package
+        run: pnpm run data-room:verify
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Test (if configured)
+        shell: bash
+        run: |
+          if node -e "process.exit(require('./package.json').scripts?.test ? 0 : 1)"; then
+            pnpm run test
+          else
+            echo "ℹ️  No test script configured; skipping"
+          fi
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Deploy (Railway)
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.RAILWAY_TOKEN != '' }}
+        run: |
+          npm i -g @railway/cli
+          railway up
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
