@@ -1,16 +1,12 @@
 import { FOUNDER } from "@/lib/invariants/founder";
 
 export function assertFounderExecution() {
-  const key = process.env.BICKFORD_FOUNDER_KEY;
+  const key = (process.env.BICKFORD_FOUNDER_KEY ?? "").trim();
 
   if (!key) {
     throw new Error(
       "EXECUTION BLOCKED: Founder key not present. No authority to execute.",
     );
-  }
-
-  if (key !== "ALLOW_EXECUTION_V1") {
-    throw new Error("EXECUTION BLOCKED: Invalid founder key. Authority denied.");
   }
 
   return {

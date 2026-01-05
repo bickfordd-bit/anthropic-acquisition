@@ -70,7 +70,7 @@ Recommended (production):
 Founder-only execution (for `/api/bickford/execute`):
 
 - `BICKFORD_EXECUTION_ENABLED` — must be `true` or execution is blocked.
-- `BICKFORD_FOUNDER_KEY` — must be exactly `ALLOW_EXECUTION_V1` or execution is blocked.
+- `BICKFORD_FOUNDER_KEY` — must be set or execution is blocked (use a long random value).
 	- On Netlify, ensure this is set for the deploy contexts you use (Production, Deploy Previews, Branch deploys, etc.).
 - `BICKFORD_PUBLIC_API` — set `true` only if you intentionally want unauthenticated access in production.
 
