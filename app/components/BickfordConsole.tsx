@@ -21,7 +21,7 @@ export default function BickfordConsole() {
       if (res.ok) {
         setPlan(data);
       } else {
-        setLog(l => [...l, `Error: ${data.error}`]);
+        setLog(l => [...l, `Error: ${data?.error || 'Unknown error occurred'}`]);
       }
     } catch (error: any) {
       setLog(l => [...l, `Error: ${error.message}`]);
@@ -44,7 +44,7 @@ export default function BickfordConsole() {
         setPlan(null);
         setIntent("");
       } else {
-        setLog(l => [...l, `Error: ${out.error}`]);
+        setLog(l => [...l, `Error: ${out?.error || 'Unknown error occurred'}`]);
       }
     } catch (error: any) {
       setLog(l => [...l, `Error: ${error.message}`]);

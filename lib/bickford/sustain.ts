@@ -1,7 +1,7 @@
 // lib/bickford/sustain.ts
-import { read } from "./ledger";
+import { read, LedgerEntry } from "./ledger";
 
-export function identifyImprovements() {
+export function identifyImprovements(): LedgerEntry[] {
   const ledger = read();
-  return ledger.filter((e: any) => e.type === "failure");
+  return ledger.filter((e: LedgerEntry) => e.type === "failure");
 }

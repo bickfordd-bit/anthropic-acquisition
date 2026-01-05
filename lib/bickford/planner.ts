@@ -1,7 +1,8 @@
 // lib/bickford/planner.ts
 import { assertBickfordIdentity } from "@/lib/invariants/bickfordIdentity";
+import { Plan } from "./applier";
 
-export async function planFromIntent(intent: string) {
+export async function planFromIntent(intent: string): Promise<Plan> {
   assertBickfordIdentity("Bickford");
 
   return {
