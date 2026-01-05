@@ -8,27 +8,44 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ secrets.NETLIFY_AUTH_TOKEN != '' && secrets.NETLIFY_SITE_ID != '' }}
 
     steps:
       - uses: actions/checkout@v4
 
+      - name: Check Netlify configuration
+        id: netlify
+        run: |
+          if [ -n "$NETLIFY_AUTH_TOKEN" ] && [ -n "$NETLIFY_SITE_ID" ]; then
+            echo "enabled=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "enabled=false" >> "$GITHUB_OUTPUT"
+            echo "ℹ️  NETLIFY_AUTH_TOKEN/NETLIFY_SITE_ID not set; skipping deploy."
+          fi
+        env:
+          NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}
+          NETLIFY_SITE_ID: ${{ secrets.NETLIFY_SITE_ID }}
+
       - uses: pnpm/action-setup@v4
+        if: steps.netlify.outputs.enabled == 'true'
 
       - uses: actions/setup-node@v4
+        if: steps.netlify.outputs.enabled == 'true'
         with:
           node-version: 20
           cache: pnpm
 
       - name: Install
+        if: steps.netlify.outputs.enabled == 'true'
         run: pnpm install --frozen-lockfile
 
       - name: Build
+        if: steps.netlify.outputs.enabled == 'true'
         run: pnpm run build
         env:
           SKIP_ENV_VALIDATION: "true"
 
       - name: Deploy
+        if: steps.netlify.outputs.enabled == 'true'
         run: pnpm exec netlify deploy --build --prod --message "Deploy from GitHub Actions"
         env:
           NETLIFY_AUTH_TOKEN: ${{ secrets.NETLIFY_AUTH_TOKEN }}

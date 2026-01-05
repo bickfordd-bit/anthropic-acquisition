@@ -62,8 +62,12 @@ jobs:
           REQUIRE_REMOTE: ${{ secrets.BICKFORD_BASE_URL != '' && secrets.DATA_ROOM_TOKEN != '' && 'true' || 'false' }}
 
       - name: Restart Railway service (on failure)
-        if: failure() && secrets.RAILWAY_TOKEN != ''
+        if: failure()
         run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "ℹ️  RAILWAY_TOKEN not set; skipping restart"
+            exit 0
+          fi
           npm i -g @railway/cli
           railway service restart
         env:

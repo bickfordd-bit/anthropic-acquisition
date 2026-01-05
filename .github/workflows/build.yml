@@ -54,8 +54,12 @@ jobs:
         run: pnpm run build
 
       - name: Deploy (Railway)
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && secrets.RAILWAY_TOKEN != '' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         run: |
+          if [ -z "$RAILWAY_TOKEN" ]; then
+            echo "ℹ️  RAILWAY_TOKEN not set; skipping deploy"
+            exit 0
+          fi
           npm i -g @railway/cli
           railway up
         env:
