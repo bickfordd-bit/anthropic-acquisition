@@ -6,9 +6,10 @@ export const runtime = "nodejs";
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { executionId: string } }
+  context: { params: Promise<{ executionId: string }> }
 ) {
   try {
+    const params = await context.params;
     const executionId = params.executionId;
 
     if (!executionId) {
