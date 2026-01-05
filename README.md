@@ -23,6 +23,11 @@ Required:
 - `DATA_ROOM_TOKEN` — protects export endpoints (`/api/data-room/export`, `/api/audit/pdf`, `/api/compliance*`). Generate with `openssl rand -hex 32`.
 - `DATABASE_URL` — Prisma connection string. For local SQLite: `file:./dev.db`.
 
+Recommended (production):
+
+- `BICKFORD_API_TOKEN` — bearer token for most write/compute API routes (e.g. `/api/execute`, `/api/chat/*`, `/api/ledger/*`). Generate with `openssl rand -hex 32`.
+- `BICKFORD_PUBLIC_API` — set `true` only if you intentionally want unauthenticated access in production.
+
 Optional:
 
 - `ANTHROPIC_API_KEY` — enables live Claude integration.
@@ -43,15 +48,19 @@ Create a local env file (Next.js loads `.env.local` automatically):
 
 ```bash
 export DATA_ROOM_TOKEN="$(openssl rand -hex 32)"
+export BICKFORD_API_TOKEN="$(openssl rand -hex 32)"
 
 cat > .env.local << 'EOF'
 DATA_ROOM_TOKEN=__REPLACE__
+BICKFORD_API_TOKEN=__REPLACE_API__
+BICKFORD_PUBLIC_API=false
 DATABASE_URL=file:./dev.db
 DEMO_MODE=false
 EOF
 
 # Inject the generated token
 sed -i "s/__REPLACE__/${DATA_ROOM_TOKEN}/" .env.local
+sed -i "s/__REPLACE_API__/${BICKFORD_API_TOKEN}/" .env.local
 ```
 
 Run the app:
@@ -75,6 +84,7 @@ curl -H "Authorization: Bearer $DATA_ROOM_TOKEN" \
 
 # Execute (Claude intent requires ANTHROPIC_API_KEY)
 curl -X POST http://localhost:3000/api/execute \
+	-H "Authorization: Bearer $BICKFORD_API_TOKEN" \
 	-H "Content-Type: application/json" \
 	-d '{"prompt":"Test prompt","useClaudeIntent":true}'
 ```

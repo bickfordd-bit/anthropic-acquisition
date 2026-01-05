@@ -50,9 +50,11 @@ fi
 
 export DATA_ROOM_TOKEN="${DATA_ROOM_TOKEN:-$(openssl rand -hex 32)}"
 export OUTREACH_TOKEN="${OUTREACH_TOKEN:-$(openssl rand -hex 32)}"
+export BICKFORD_API_TOKEN="${BICKFORD_API_TOKEN:-$(openssl rand -hex 32)}"
 
 echo "🔐 DATA_ROOM_TOKEN=$DATA_ROOM_TOKEN"
 echo "🔐 OUTREACH_TOKEN=$OUTREACH_TOKEN"
+echo "🔐 BICKFORD_API_TOKEN=$BICKFORD_API_TOKEN"
 
 if [[ -z "${DATABASE_URL:-}" ]]; then
 	export DATABASE_URL="file:./dev.db"
@@ -66,12 +68,11 @@ fi
 cat > .env.local <<EOF
 DATA_ROOM_TOKEN=$DATA_ROOM_TOKEN
 OUTREACH_TOKEN=$OUTREACH_TOKEN
+BICKFORD_API_TOKEN=$BICKFORD_API_TOKEN
+BICKFORD_PUBLIC_API=false
 DATABASE_URL=$DATABASE_URL
 DEMO_MODE=$DEMO_MODE
 NODE_ENV=development
-
-# Optional: set in Netlify dashboard instead of here
-# ANTHROPIC_API_KEY=sk-ant-api03-...
 EOF
 
 echo "✅ Wrote local env to .env.local (gitignored)"

@@ -44,12 +44,20 @@ REQUIRED_VARS=(
   "DATA_ROOM_TOKEN"
 )
 
+# If this is a production deployment and the API isn't explicitly public,
+# require a separate bearer token for the app API routes.
+if [[ "${NODE_ENV:-}" == "production" && "${BICKFORD_PUBLIC_API:-false}" != "true" ]]; then
+  REQUIRED_VARS+=("BICKFORD_API_TOKEN")
+fi
+
 OPTIONAL_VARS=(
   "ANTHROPIC_API_KEY"
   "ANTHROPIC_CHAT_MODEL"
   "ANTHROPIC_INTENT_MODEL"
   "DEMO_MODE"
   "OUTREACH_TOKEN"
+  "BICKFORD_PUBLIC_API"
+  "BICKFORD_MAX_JSON_BYTES"
   "BICKFORD_BASE_URL"
   "HEALTHCHECK_URL"
   "REQUIRE_REMOTE"
