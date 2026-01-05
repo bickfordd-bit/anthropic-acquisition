@@ -1,4 +1,4 @@
-// components/BickfordConsole.tsx
+// app/components/BickfordConsole.tsx
 "use client";
 
 import { useState } from "react";

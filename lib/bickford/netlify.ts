@@ -23,7 +23,13 @@ export async function deployToNetlify(executionId: string): Promise<NetlifyDeplo
     throw new Error("NETLIFY_BUILD_HOOK environment variable is not set");
   }
 
-  const deployUrl = process.env.BICKFORD_BASE_URL || "https://your-site.netlify.app";
+  const deployUrl = process.env.BICKFORD_BASE_URL;
+  
+  if (!deployUrl) {
+    console.warn("BICKFORD_BASE_URL not set, using placeholder");
+  }
+
+  const finalDeployUrl = deployUrl || "https://your-site.netlify.app";
 
   // Trigger build
   const triggerResponse = await fetch(buildHook, { method: "POST" });
@@ -35,7 +41,7 @@ export async function deployToNetlify(executionId: string): Promise<NetlifyDeplo
   appendToLedger({
     type: "DEPLOY_TRIGGERED",
     executionId,
-    deployUrl,
+    deployUrl: finalDeployUrl,
     timestamp: new Date().toISOString(),
   });
 
@@ -47,14 +53,14 @@ export async function deployToNetlify(executionId: string): Promise<NetlifyDeplo
     appendToLedger({
       type: "DEPLOY_COMPLETE",
       executionId,
-      deployUrl,
+      deployUrl: finalDeployUrl,
       status: deployStatus,
       timestamp: new Date().toISOString(),
     });
 
     return {
       success: deployStatus === "ready",
-      deployUrl,
+      deployUrl: finalDeployUrl,
       status: deployStatus,
     };
   } else {
@@ -64,14 +70,14 @@ export async function deployToNetlify(executionId: string): Promise<NetlifyDeplo
     appendToLedger({
       type: "DEPLOY_COMPLETE",
       executionId,
-      deployUrl,
+      deployUrl: finalDeployUrl,
       status: "triggered",
       timestamp: new Date().toISOString(),
     });
 
     return {
       success: true,
-      deployUrl,
+      deployUrl: finalDeployUrl,
       status: "triggered",
     };
   }
