@@ -15,6 +15,7 @@ No PDF. No deck. Just a 5-minute, self-guided walkthrough:
 🔗 **[YOUR-VERCEL-URL-HERE]**
 
 Key components:
+
 - Constitutional AI for reasoning (you have this)
 - Execution authority for action (Bickford provides this)
 - Tamper-evident decision ledger (provable safety)
@@ -25,6 +26,7 @@ The deal: $500M over 36 months, milestone-based.
 If the framing resonates, the right next step is a 30-minute working conversation on architecture and integration.
 
 Available this week:
+
 - Tuesday after 9 AM PT
 - Wednesday anytime
 - Thursday before 12 PM PT

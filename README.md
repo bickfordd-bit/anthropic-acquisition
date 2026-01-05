@@ -18,5 +18,6 @@ Interactive web experience for presenting Bickford acquisition opportunity to An
 ## Customize
 
 Edit `index.html` to update:
+
 - Phone number (search for `tel:+1234567890`)
 - Email address (search for `derek@bickfordtechnologies.com`)
