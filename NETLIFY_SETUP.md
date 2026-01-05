@@ -7,7 +7,7 @@ This repo is a Next.js app (App Router) and deploys cleanly to Netlify using `@n
 1. Go to https://app.netlify.com/start
 2. Import from Git → GitHub → select `bickfordd-bit/anthropic-acquisition`
 3. Build settings:
-   - Build command: `pnpm run build`
+   - Build command: `corepack enable && pnpm -w run build`
    - Publish directory: `.next` (Netlify plugin handles the runtime)
 4. Add environment variables:
    - Copy from [.env.netlify.template](.env.netlify.template)

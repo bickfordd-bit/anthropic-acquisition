@@ -1,11 +1,12 @@
 [build]
   base = "."
-  command = "pnpm -w run build"
+  command = "corepack enable && pnpm -w run build"
   publish = ".next"
 
 [build.environment]
   NODE_VERSION = "20"
   SKIP_ENV_VALIDATION = "true"
+  COREPACK_ENABLE_DOWNLOAD_PROMPT = "0"
 
 [[plugins]]
   package = "@netlify/plugin-nextjs"
