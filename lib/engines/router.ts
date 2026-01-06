@@ -111,7 +111,7 @@ async function callClaude(
   });
 
   const model =
-    process.env.ANTHROPIC_CHAT_MODEL ?? "claude-3-5-sonnet-20241022";
+    process.env.ANTHROPIC_CHAT_MODEL ?? "claude-3-5-sonnet-latest";
   const maxTokens = options.maxTokens ?? 512;
   const temperature = options.temperature ?? 0.2;
 
@@ -147,7 +147,7 @@ async function callGPT(
     throw new Error("Missing OPENAI_API_KEY");
   }
 
-  const model = process.env.OPENAI_CHAT_MODEL ?? "gpt-4-turbo";
+  const model = process.env.OPENAI_CHAT_MODEL ?? "gpt-4-turbo-preview";
   const maxTokens = options.maxTokens ?? 512;
   const temperature = options.temperature ?? 0.2;
 

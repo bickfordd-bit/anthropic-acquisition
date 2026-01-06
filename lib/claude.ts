@@ -42,7 +42,7 @@ export async function generateIntentWithProvenance(prompt: string) {
     }
 
     const model =
-      process.env.ANTHROPIC_INTENT_MODEL ?? "claude-3-5-sonnet-20241022";
+      process.env.ANTHROPIC_INTENT_MODEL ?? "claude-3-5-sonnet-latest";
 
     const message = await anthropic.messages.create({
       model,

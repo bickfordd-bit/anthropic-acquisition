@@ -19,7 +19,7 @@ function extractText(content: Array<{ type: string; text?: string }>): string {
 export async function claude(prompt: string) {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error("Missing ANTHROPIC_API_KEY");
 
-  const model = process.env.ANTHROPIC_CHAT_MODEL ?? "claude-3-5-sonnet-20241022";
+  const model = process.env.ANTHROPIC_CHAT_MODEL ?? "claude-3-5-sonnet-latest";
   const message = await anthropic.messages.create({
     model,
     max_tokens: 512,

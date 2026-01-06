@@ -6,7 +6,7 @@ export async function chatGPT(prompt: string) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
 
-  const model = process.env.OPENAI_CHAT_MODEL ?? "gpt-4-turbo";
+  const model = process.env.OPENAI_CHAT_MODEL ?? "gpt-4-turbo-preview";
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",

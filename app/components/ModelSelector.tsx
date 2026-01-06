@@ -31,14 +31,12 @@ export default function ModelSelector() {
   }, [selectedModel]);
 
   const checkModelAvailability = async () => {
-    // For now, we assume models are available based on env vars
-    // In production, you could add an API endpoint to check this
-    const hasAnthropicKey = !!process.env.NEXT_PUBLIC_HAS_ANTHROPIC_KEY;
-    const hasOpenAIKey = !!process.env.NEXT_PUBLIC_HAS_OPENAI_KEY;
-
+    // Model availability is determined server-side based on API keys
+    // We default to assuming models are available unless explicitly known otherwise
+    // In production, you could add an API endpoint to check this server-side
     setModelStatuses([
-      { provider: "claude", available: hasAnthropicKey !== false }, // Assume true unless explicitly false
-      { provider: "gpt", available: hasOpenAIKey !== false },
+      { provider: "claude", available: true },
+      { provider: "gpt", available: true },
     ]);
   };
 

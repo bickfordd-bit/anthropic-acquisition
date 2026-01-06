@@ -67,7 +67,7 @@ ${intent}
     }
 
     const msg = await anthropic.messages.create({
-      model: process.env.ANTHROPIC_PLAN_MODEL ?? "claude-3-5-sonnet-20241022",
+      model: process.env.ANTHROPIC_PLAN_MODEL ?? "claude-3-5-sonnet-latest",
       max_tokens: 800,
       temperature: 0,
       messages: [
