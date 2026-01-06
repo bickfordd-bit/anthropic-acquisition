@@ -1,26 +1,33 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import ModelSelector from "./ModelSelector";
 
 type Engine = "chatgpt-5.2" | "claude" | "github-copilot";
 
-type Msg = { role: "user" | "assistant"; content: string };
+type Msg = { role: "user" | "assistant"; content: string; model?: string };
 
 export default function UnifiedChatbox() {
   const [engine, setEngine] = useState<Engine>("chatgpt-5.2");
   const [input, setInput] = useState("");
   const [messages, setMessages] = useState<Msg[]>([]);
   const [streaming, setStreaming] = useState(false);
+  const [currentModel, setCurrentModel] = useState<string>("");
 
   const canSend = useMemo(() => input.trim().length > 0 && !streaming, [input, streaming]);
 
   async function send() {
     if (!canSend) return;
 
+    // Get model preference from localStorage (set by ModelSelector)
+    const modelPreference = localStorage.getItem("bickford-model-preference") || "auto";
+
     const payload = {
       engine,
       message: input,
       session: "bickford-live",
+      taskType: "chat",
+      model: modelPreference !== "auto" ? modelPreference : undefined,
     };
 
     setMessages((m) => [...m, { role: "user", content: input }, { role: "assistant", content: "" }]);
@@ -67,14 +74,24 @@ export default function UnifiedChatbox() {
           const raw = line.replace(/^data:\s*/, "");
           if (raw === "[DONE]") continue;
 
-          const evt = JSON.parse(raw) as { token?: string; error?: string };
+          const evt = JSON.parse(raw) as { token?: string; error?: string; model?: string };
+          
+          // Update current model if provided
+          if (evt.model) {
+            setCurrentModel(evt.model);
+          }
+
           const token = evt.error ? `\n[error] ${evt.error}` : evt.token ?? "";
 
           setMessages((m) => {
             const next = m.slice();
             const last = next[next.length - 1];
             if (last?.role !== "assistant") return next;
-            next[next.length - 1] = { ...last, content: last.content + token };
+            next[next.length - 1] = { 
+              ...last, 
+              content: last.content + token,
+              model: currentModel 
+            };
             return next;
           });
         }
@@ -87,9 +104,19 @@ export default function UnifiedChatbox() {
   return (
     <section className="rounded-lg border p-4 space-y-3">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-semibold">Unified Chatbox (ALL)</h2>
-        <div className="text-xs text-zinc-600">
-          {streaming ? "streaming" : "idle"}
+        <div className="flex items-center gap-3">
+          <h2 className="font-semibold">Unified Chatbox (ALL)</h2>
+          {currentModel && (
+            <span className="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800">
+              {currentModel}
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-xs text-zinc-600">
+            {streaming ? "streaming" : "idle"}
+          </div>
+          <ModelSelector />
         </div>
       </div>
 
@@ -112,6 +139,9 @@ export default function UnifiedChatbox() {
           messages.map((m, i) => (
             <div key={i} className="mb-2 whitespace-pre-wrap">
               <span className="font-semibold">{m.role}:</span> {m.content}
+              {m.model && m.role === "assistant" && (
+                <span className="ml-2 text-xs text-zinc-500">({m.model})</span>
+              )}
             </div>
           ))
         )}

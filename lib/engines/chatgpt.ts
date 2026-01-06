@@ -1,6 +1,12 @@
+/**
+ * Direct ChatGPT API call (legacy interface)
+ * For new code, prefer using the router from lib/engines/router.ts
+ */
 export async function chatGPT(prompt: string) {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
+
+  const model = process.env.OPENAI_CHAT_MODEL ?? "gpt-4-turbo";
 
   const res = await fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
@@ -9,7 +15,7 @@ export async function chatGPT(prompt: string) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "gpt-5.2",
+      model,
       messages: [{ role: "user", content: prompt }],
     }),
   });
@@ -22,3 +28,4 @@ export async function chatGPT(prompt: string) {
   const data = (await res.json()) as any;
   return data.choices?.[0]?.message?.content ?? "";
 }
+
