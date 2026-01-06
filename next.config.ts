@@ -26,6 +26,7 @@ export default withSentryConfig(nextConfig, {
   project: process.env.SENTRY_PROJECT,
 
   // Only print logs for uploading source maps in CI
+  // In development, silence the logs to avoid noise
   silent: !process.env.CI,
 
   // For all available options, see:

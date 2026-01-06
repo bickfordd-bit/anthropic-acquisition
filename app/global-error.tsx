@@ -16,7 +16,8 @@ export default function GlobalError({
   return (
     <html>
       <body>
-        <NextError statusCode={undefined as any} />
+        {/* NextError requires a statusCode but we use 500 for global errors */}
+        <NextError statusCode={500} />
       </body>
     </html>
   );
