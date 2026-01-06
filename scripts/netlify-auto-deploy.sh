@@ -51,6 +51,12 @@ fi
 echo "📦 Installing deps (if needed)…"
 pnpm install
 
+# Set Sentry release version for tracking
+if [[ -d .git ]]; then
+  export SENTRY_RELEASE="$(git rev-parse HEAD)"
+  echo "📊 Sentry release: ${SENTRY_RELEASE}"
+fi
+
 echo "🏗️  Building…"
 pnpm run build
 
