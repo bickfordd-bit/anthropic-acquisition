@@ -31,7 +31,23 @@ Sentry is an automated error and performance monitoring platform that watches yo
 
 ## 📁 Configuration Files Explained
 
-### `sentry.client.config.ts` - Client-Side Monitoring
+### `instrumentation.ts` - Server and Edge Runtime Monitoring
+
+**What it does:** Monitors server-side operations including API routes, server components, and edge functions.
+
+**Key features:**
+- Captures server and edge runtime errors
+- Tracks server component errors
+- Monitors server performance
+- Records database errors
+- Handles both Node.js and Edge runtimes
+
+**Configuration:**
+- `tracesSampleRate: 1.0` - Track all server operations (adjust to 0.1 in production)
+- Uses `NEXT_PUBLIC_SENTRY_DSN` environment variable for configuration
+- Automatically detects runtime (Node.js vs Edge) via `NEXT_RUNTIME` environment variable
+
+### `instrumentation-client.ts` - Client-Side Monitoring
 
 **What it does:** Monitors everything that happens in the user's browser.
 
@@ -48,32 +64,15 @@ Sentry is an automated error and performance monitoring platform that watches yo
 - `maskAllText: true` - Hides sensitive text in replays
 - `blockAllMedia: true` - Blocks images/videos in replays for privacy
 
-### `sentry.server.config.ts` - Server-Side Monitoring
+### `app/global-error.tsx` - React Error Boundary
 
-**What it does:** Monitors your Next.js API routes and server components.
-
-**Key features:**
-- Captures API route errors
-- Tracks server component errors
-- Monitors server performance
-- Records database errors
-
-**Configuration:**
-- `tracesSampleRate: 1.0` - Track all server operations (adjust to 0.1 in production)
-- Uses `NEXT_PUBLIC_SENTRY_DSN` environment variable for configuration
-
-### `sentry.edge.config.ts` - Edge Runtime Monitoring
-
-**What it does:** Monitors Next.js middleware and edge functions.
+**What it does:** Catches React rendering errors that occur in the root layout.
 
 **Key features:**
-- Captures middleware errors
-- Tracks edge function performance
-- Monitors request routing issues
-
-**Configuration:**
-- Same sampling rates as server config
-- Lightweight configuration for edge runtime
+- Captures React component errors
+- Sends errors to Sentry automatically
+- Provides fallback UI for users
+- Required for complete error coverage in App Router
 
 ### `next.config.ts` - Sentry Integration
 
@@ -369,9 +368,9 @@ If build fails with Sentry:
 ## 🎯 Success Checklist
 
 - [x] Sentry SDK installed (`@sentry/nextjs`)
-- [x] Client config created (`sentry.client.config.ts`)
-- [x] Server config created (`sentry.server.config.ts`)
-- [x] Edge config created (`sentry.edge.config.ts`)
+- [x] Server/Edge config created (`instrumentation.ts`)
+- [x] Client config created (`instrumentation-client.ts`)
+- [x] Global error handler created (`app/global-error.tsx`)
 - [x] Next.js config updated with Sentry integration
 - [x] Environment variables documented in `.env.example`
 - [x] Test endpoint created at `/api/sentry-test`
