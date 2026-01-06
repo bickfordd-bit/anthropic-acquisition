@@ -66,6 +66,9 @@ await waitForReady(api, 30_000);
   });
   results.push({ step: "allowed_execution", ...r });
   if (!r.ok) throw new Error(`Allowed execution failed (${r.status}): ${r.text}`);
+  if (r.json?.decision !== "ALLOW") {
+    throw new Error(`Expected ALLOW for allowed execution, got: ${JSON.stringify(r.json)}`);
+  }
 }
 
 // 2) Canon-based denial: immutability
@@ -77,7 +80,10 @@ await waitForReady(api, 30_000);
     dryRun: true,
   });
   results.push({ step: "canon_denial", ...r });
-  if (r.ok) throw new Error("Expected denial for 'delete ledger', but request succeeded");
+  if (!r.ok) throw new Error(`Expected dryRun denial response, got HTTP ${r.status}: ${r.text}`);
+  if (r.json?.decision !== "DENY") {
+    throw new Error(`Expected DENY for 'delete ledger', got: ${JSON.stringify(r.json)}`);
+  }
 }
 
 // 3) Data-room export
