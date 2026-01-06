@@ -14,6 +14,14 @@ function extractText(content: unknown): string {
 }
 
 export async function claudeProposePlan(intent: string) {
+  // Demo mode: deterministic, offline, and safe.
+  if (process.env.DEMO_MODE === "true") {
+    return {
+      summary: `DEMO PLAN (no-op): ${String(intent).slice(0, 140)}`,
+      files: [],
+    };
+  }
+
   if (!process.env.ANTHROPIC_API_KEY) {
     throw new Error("Missing ANTHROPIC_API_KEY");
   }

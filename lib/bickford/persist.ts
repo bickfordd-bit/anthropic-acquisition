@@ -29,6 +29,21 @@ function shouldUseGitHubMode(): boolean {
 
 export async function persistPlan({ plan, executionId }: PersistArgs): Promise<PersistResult> {
   const summary = String(plan?.summary ?? "Bickford execution");
+
+  if (process.env.DEMO_MODE === "true") {
+    appendLedgerEvent({
+      id: crypto.randomUUID(),
+      executionId,
+      type: "DEPLOY_TRIGGERED",
+      summary: "Demo persist (no-op)",
+      details: {
+        note: "DEMO_MODE=true: skipping git/GitHub/Netlify persistence",
+      },
+      timestamp: new Date().toISOString(),
+    });
+    return { mode: "local", sha: "DEMO" };
+  }
+
   const useGitHub = shouldUseGitHubMode();
 
   if (!useGitHub) {
