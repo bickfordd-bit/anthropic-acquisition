@@ -28,10 +28,14 @@ export default function AuthorityStream() {
     evt.onopen = () => setStatus("open");
     evt.onerror = () => setStatus("closed");
     evt.onmessage = (e) => {
-      const data = JSON.parse(e.data) as LedgerEntry;
-      if (seen.current.has(data.id)) return;
-      seen.current.add(data.id);
-      setEntries((prev) => [...prev, data]);
+      try {
+        const data = JSON.parse(e.data) as LedgerEntry;
+        if (!data?.id) return;
+        if (seen.current.has(data.id)) return;
+        seen.current.add(data.id);
+        setEntries((prev) => [...prev, data]);
+      } catch {
+      }
     };
 
     return () => evt.close();

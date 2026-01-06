@@ -14,16 +14,35 @@ type CanonDiffItem = {
 export default function CanonDiff() {
   const [diffs, setDiffs] = useState<CanonDiffItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
 
     async function load() {
       try {
-        const data = await fetch("/api/canon/diff", { cache: "no-store" }).then((r) =>
-          r.json(),
-        );
-        if (!cancelled) setDiffs(data);
+        if (!cancelled) setError(null);
+
+        const res = await fetch("/api/canon/diff", { cache: "no-store" });
+        const contentType = res.headers.get("content-type") ?? "";
+
+        if (!res.ok) {
+          const text = await res.text().catch(() => "");
+          throw new Error(text || `Request failed (${res.status})`);
+        }
+
+        if (!contentType.toLowerCase().includes("application/json")) {
+          const text = await res.text().catch(() => "");
+          throw new Error(text || "Expected JSON response");
+        }
+
+        const data = (await res.json().catch(() => [])) as unknown;
+        if (!cancelled) setDiffs(Array.isArray(data) ? (data as CanonDiffItem[]) : []);
+      } catch (e: any) {
+        if (!cancelled) {
+          setDiffs([]);
+          setError(String(e?.message ?? e));
+        }
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -45,6 +64,9 @@ export default function CanonDiff() {
       </div>
 
       <div className="max-h-[32rem] overflow-auto rounded-md border bg-white">
+        {error ? (
+          <div className="p-3 text-sm text-red-700 whitespace-pre-wrap">{error}</div>
+        ) : null}
         {diffs.length === 0 ? (
           <div className="p-3 text-sm text-zinc-600">No canon promoted yet.</div>
         ) : (

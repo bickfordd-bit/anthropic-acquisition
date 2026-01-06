@@ -6,6 +6,9 @@ import { appendLedgerEvent } from "@/lib/ledger/write";
 import { assertBickfordIdentity } from "@/lib/invariants/bickfordIdentity";
 import { assertFounderExecution } from "@/lib/guards/founderGuard";
 import { enforceApiAuth, enforceRateLimit, readJson, safeErrorMessage } from "@/lib/apiSecurity";
+import { analyzeFailure } from "@/lib/recovery/analyzeFailure";
+import { selfHeal } from "@/lib/recovery/selfHeal";
+import { rollbackToSafeState } from "@/lib/recovery/rollback";
 
 export const runtime = "nodejs";
 
@@ -98,6 +101,37 @@ export async function POST(req: Request) {
     });
   } catch (e) {
     const msg = safeErrorMessage(e);
+    const reason = analyzeFailure(e);
+
+    // Always record the failure into the ledger, then attempt autonomous repair.
+    await selfHeal(executionId, reason, e);
+
+    // If rollback is not enabled, we still return a deterministic failure response.
+    if (process.env.BICKFORD_ROLLBACK_ENABLED === "true") {
+      try {
+        const rolled = await rollbackToSafeState(executionId, reason);
+        return NextResponse.json(
+          {
+            status: "ROLLED_BACK",
+            executionId,
+            restoredCommit: rolled.restoredCommit,
+            reason,
+          },
+          { status: 500 },
+        );
+      } catch (rollbackErr) {
+        const rollbackMsg = safeErrorMessage(rollbackErr);
+        appendLedgerEvent({
+          id: crypto.randomUUID(),
+          executionId,
+          type: "DEPLOY_COMPLETE",
+          summary: "Rollback failed",
+          details: { error: rollbackMsg, originalError: msg, reason },
+          timestamp: new Date().toISOString(),
+        });
+      }
+    }
+
     appendLedgerEvent({
       id: crypto.randomUUID(),
       executionId,

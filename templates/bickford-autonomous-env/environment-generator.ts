@@ -270,7 +270,7 @@ export const canon = {
   }
 
   private generateNetlifyConfig(envPath: string): void {
-    const config = `[build]\n  command = "pnpm run build"\n  publish = ".next"\n\n[build.environment]\n  NODE_VERSION = "20"\n\n[[plugins]]\n  package = "@netlify/plugin-nextjs"\n`;
+    const config = `[build]\n  command = "pnpm run build"\n  publish = ".next"\n\n[build.environment]\n  NODE_VERSION = "22.12.0"\n\n[[plugins]]\n  package = "@netlify/plugin-nextjs"\n`;
     fs.writeFileSync(path.join(envPath, "netlify.toml"), config);
   }
 
@@ -298,12 +298,12 @@ export const canon = {
   }
 
   private generateDockerConfig(envPath: string): void {
-    const dockerfile = `FROM node:20-alpine\nRUN corepack enable\nWORKDIR /app\nCOPY package.json pnpm-lock.yaml ./\nRUN pnpm install --frozen-lockfile\nCOPY . .\nRUN pnpm run build\nEXPOSE 3000\nCMD [\"pnpm\", \"start\"]\n`;
+    const dockerfile = `FROM node:22.12.0-alpine\nRUN corepack enable\nWORKDIR /app\nCOPY package.json pnpm-lock.yaml ./\nRUN pnpm install --frozen-lockfile\nCOPY . .\nRUN pnpm run build\nEXPOSE 3000\nCMD [\"pnpm\", \"start\"]\n`;
     fs.writeFileSync(path.join(envPath, "Dockerfile"), dockerfile);
   }
 
   private generateGitHubActionsWorkflow(spec: EnvironmentSpec): string {
-    return `name: Autonomous Deploy\n\non:\n  push:\n    branches: [main]\n\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: pnpm/action-setup@v2\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 20\n          cache: pnpm\n      - run: pnpm install\n      - run: pnpm run build\n      - name: Deploy\n        run: echo \"Deploy to ${spec.targetPlatform}\"\n`;
+    return `name: Autonomous Deploy\n\non:\n  push:\n    branches: [main]\n\njobs:\n  deploy:\n    runs-on: ubuntu-latest\n    steps:\n      - uses: actions/checkout@v4\n      - uses: pnpm/action-setup@v2\n      - uses: actions/setup-node@v4\n        with:\n          node-version: 22.12.0\n          cache: pnpm\n      - run: pnpm install\n      - run: pnpm run build\n      - name: Deploy\n        run: echo \"Deploy to ${spec.targetPlatform}\"\n`;
   }
 
   private copyDir(srcDir: string, destDir: string, ignores: Set<string>) {

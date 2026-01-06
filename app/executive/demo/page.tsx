@@ -89,7 +89,8 @@ export default function Page() {
         <Step title="4) Execute + show deny path recorded">
           <CodeBlock>{EXECUTE_DENY_SNIPPET}</CodeBlock>
           <div className="mt-2 text-xs text-neutral-400">
-            Tip: open <span className="font-mono">/executive</span> to show the live ledger decisions.
+            Tip: open <span className="font-mono">/executive/ledger</span> to narrate the live execution timeline
+            (deploy → failure → rollback → self-heal).
           </div>
         </Step>
 

@@ -4,7 +4,7 @@
   publish = ".next"
 
 [build.environment]
-  NODE_VERSION = "20"
+  NODE_VERSION = "22.12.0"
   SKIP_ENV_VALIDATION = "true"
   COREPACK_ENABLE_DOWNLOAD_PROMPT = "0"
 

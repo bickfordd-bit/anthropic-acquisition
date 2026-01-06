@@ -5,7 +5,10 @@ export type LedgerEventType =
   | "FILES_APPLIED"
   | "DEPLOY_TRIGGERED"
   | "DEPLOY_COMPLETE"
-  | "ROLLBACK_EXECUTED";
+  | "SELF_HEAL_RECORDED"
+  | "ROLLBACK_EXECUTED"
+  | "DEMO_PUBLISHED"
+  | "DEMO_RECORDING_FAILED";
 
 export interface LedgerEvent {
   id: string;

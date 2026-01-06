@@ -3,12 +3,13 @@ import { rollbackLastCommit } from "@/lib/bickford/rollback";
 
 const NETLIFY_API = "https://api.netlify.com/api/v1";
 
-export async function triggerNetlifyDeploy(executionId: string) {
+export async function triggerNetlifyDeploy(executionId: string, commitSha?: string) {
   appendLedgerEvent({
     id: crypto.randomUUID(),
     executionId,
     type: "DEPLOY_TRIGGERED",
     summary: "Netlify deploy triggered",
+    details: commitSha ? { commitSha } : undefined,
     timestamp: new Date().toISOString(),
   });
 
@@ -18,7 +19,7 @@ export async function triggerNetlifyDeploy(executionId: string) {
 
   await fetch(process.env.NETLIFY_BUILD_HOOK, { method: "POST" });
 
-  const result = await waitForDeployResult(executionId);
+  const result = await waitForDeployResult(executionId, commitSha);
   if (!result.success) {
     await rollbackLastCommit(executionId, result.reason);
     throw new Error("DEPLOY_FAILED");
@@ -33,7 +34,7 @@ export async function waitForDeployPreviewByBranch(executionId: string, branch: 
   return result.success ? result.deployUrl : undefined;
 }
 
-async function waitForDeployResult(executionId: string) {
+async function waitForDeployResult(executionId: string, commitSha?: string) {
   for (let i = 0; i < 20; i++) {
     const res = await fetch(`${NETLIFY_API}/sites/${process.env.NETLIFY_SITE_ID}/deploys`, {
       headers: {
@@ -49,7 +50,7 @@ async function waitForDeployResult(executionId: string) {
         executionId,
         type: "DEPLOY_COMPLETE",
         summary: "Deploy succeeded",
-        details: { url: latest.ssl_url },
+        details: commitSha ? { url: latest.ssl_url, commitSha } : { url: latest.ssl_url },
         timestamp: new Date().toISOString(),
       });
       return { success: true as const, deployUrl: latest.ssl_url as string };
@@ -61,7 +62,9 @@ async function waitForDeployResult(executionId: string) {
         executionId,
         type: "DEPLOY_COMPLETE",
         summary: "Deploy failed",
-        details: { error: latest.error_message },
+        details: commitSha
+          ? { error: latest.error_message, commitSha }
+          : { error: latest.error_message },
         timestamp: new Date().toISOString(),
       });
       return { success: false as const, reason: String(latest.error_message ?? "unknown") };

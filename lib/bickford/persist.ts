@@ -33,7 +33,7 @@ export async function persistPlan({ plan, executionId }: PersistArgs): Promise<P
 
   if (!useGitHub) {
     const sha = await commitAndPush(summary);
-    const deployUrl = await triggerNetlifyDeploy(executionId);
+    const deployUrl = await triggerNetlifyDeploy(executionId, sha);
     return { mode: "local", sha, deployUrl };
   }
 

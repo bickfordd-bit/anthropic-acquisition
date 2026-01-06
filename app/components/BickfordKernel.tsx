@@ -31,11 +31,32 @@ export default function BickfordKernel() {
   const [busy, setBusy] = useState(false);
   const [last, setLast] = useState<KernelResult | null>(null);
   const [entries, setEntries] = useState<LedgerEntry[]>([]);
+  const [loadError, setLoadError] = useState<string | null>(null);
 
   async function refresh() {
-    const data = await fetch("/api/execute?take=20", { cache: "no-store" }).then((r) => r.json());
-    setEntries(Array.isArray(data?.entries) ? (data.entries as LedgerEntry[]) : []);
-    setLast(data?.last ?? null);
+    try {
+      setLoadError(null);
+      const res = await fetch("/api/execute?take=20", { cache: "no-store" });
+      const contentType = res.headers.get("content-type") ?? "";
+
+      if (!res.ok) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || `Request failed (${res.status})`);
+      }
+
+      if (!contentType.toLowerCase().includes("application/json")) {
+        const text = await res.text().catch(() => "");
+        throw new Error(text || "Expected JSON response");
+      }
+
+      const data = (await res.json().catch(() => ({}))) as any;
+      setEntries(Array.isArray(data?.entries) ? (data.entries as LedgerEntry[]) : []);
+      setLast(data?.last ?? null);
+    } catch (e: any) {
+      setEntries([]);
+      setLast(null);
+      setLoadError(String(e?.message ?? e));
+    }
   }
 
   useEffect(() => {
@@ -84,6 +105,12 @@ export default function BickfordKernel() {
       </div>
 
       <LastExecutionBanner last={last} />
+
+      {loadError ? (
+        <div className="rounded-md border border-red-200 bg-red-50 p-2 text-xs text-red-800 whitespace-pre-wrap">
+          {loadError}
+        </div>
+      ) : null}
 
       <ExecutionForm variant="intent" onExecute={executeIntent} busy={busy} />
 
