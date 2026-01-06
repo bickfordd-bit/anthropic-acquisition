@@ -12,6 +12,10 @@ function extractText(content: Array<{ type: string; text?: string }>): string {
     .trim();
 }
 
+/**
+ * Direct Claude API call (legacy interface)
+ * For new code, prefer using the router from lib/engines/router.ts
+ */
 export async function claude(prompt: string) {
   if (!process.env.ANTHROPIC_API_KEY) throw new Error("Missing ANTHROPIC_API_KEY");
 
@@ -25,3 +29,4 @@ export async function claude(prompt: string) {
 
   return extractText(message.content as any);
 }
+

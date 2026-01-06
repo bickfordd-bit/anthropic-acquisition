@@ -2,9 +2,8 @@ import { appendLedger } from "@/lib/ledger";
 import { routeIntent } from "@/lib/routeIntent";
 import { gateIntent } from "@/lib/permissions";
 import { getCanonSnapshot } from "@/lib/canon";
-import { chatGPT } from "@/lib/engines/chatgpt";
-import { claude } from "@/lib/engines/claude";
-import { copilot } from "@/lib/engines/copilot";
+import { routeModelRequest } from "@/lib/engines/router";
+import type { TaskType } from "@/lib/engines/types";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,7 +11,7 @@ export const dynamic = "force-dynamic";
 export async function POST(req: Request) {
   const encoder = new TextEncoder();
 
-  const { engine, message, session } = await req.json();
+  const { engine, message, session, taskType, model } = await req.json();
   const text = String(message ?? "");
   const eng = String(engine ?? "");
 
@@ -37,9 +36,43 @@ export async function POST(req: Request) {
         void canon; // currently not injected into non-stream endpoints
 
         let reply = "";
-        if (eng === "chatgpt-5.2") reply = await chatGPT(text);
-        else if (eng === "claude") reply = await claude(text);
-        else reply = await copilot(text);
+        let actualModel = eng;
+        let usage;
+
+        // Use router for intelligent model selection if taskType is provided
+        if (taskType || model) {
+          try {
+            const response = await routeModelRequest(
+              text,
+              (taskType as TaskType) || "chat",
+              { model }
+            );
+            reply = response.text;
+            actualModel = response.model;
+            usage = response.usage;
+          } catch (error) {
+            // Fallback to legacy engine selection
+            const { chatGPT } = await import("@/lib/engines/chatgpt");
+            const { claude } = await import("@/lib/engines/claude");
+            const { copilot } = await import("@/lib/engines/copilot");
+
+            if (eng === "chatgpt-5.2") reply = await chatGPT(text);
+            else if (eng === "claude") reply = await claude(text);
+            else reply = await copilot(text);
+          }
+        } else {
+          // Legacy engine-based routing
+          const { chatGPT } = await import("@/lib/engines/chatgpt");
+          const { claude } = await import("@/lib/engines/claude");
+          const { copilot } = await import("@/lib/engines/copilot");
+
+          if (eng === "chatgpt-5.2") reply = await chatGPT(text);
+          else if (eng === "claude") reply = await claude(text);
+          else reply = await copilot(text);
+        }
+
+        // Send model info first
+        send({ model: actualModel, usage });
 
         // token-ish streaming
         for (const token of reply.split(/(\s+)/)) {
@@ -47,7 +80,7 @@ export async function POST(req: Request) {
           await new Promise((r) => setTimeout(r, 15));
         }
 
-        await appendLedger({ type: "action", engine: eng, branch, reply, session });
+        await appendLedger({ type: "action", engine: actualModel, branch, reply, session });
         send("[DONE]");
       } catch (e) {
         send({ error: String((e as Error).message ?? e) });
@@ -65,3 +98,4 @@ export async function POST(req: Request) {
     },
   });
 }
+

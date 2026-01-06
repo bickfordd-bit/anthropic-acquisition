@@ -1,4 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
+import { routeModelRequest } from "@/lib/engines/router";
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
@@ -22,18 +23,7 @@ export async function claudeProposePlan(intent: string) {
     };
   }
 
-  if (!process.env.ANTHROPIC_API_KEY) {
-    throw new Error("Missing ANTHROPIC_API_KEY");
-  }
-
-  const msg = await anthropic.messages.create({
-    model: process.env.ANTHROPIC_PLAN_MODEL ?? "claude-3-5-sonnet-latest",
-    max_tokens: 800,
-    temperature: 0,
-    messages: [
-      {
-        role: "user",
-        content: `
+  const planPrompt = `
 You are assisting a system called Bickford.
 Your task:
 - Propose a deterministic execution plan
@@ -52,18 +42,51 @@ Your task:
 
 Intent:
 ${intent}
-        `.trim(),
-      },
-    ],
-  });
+  `.trim();
 
-  const text = extractText((msg as any).content);
-  if (!text) throw new Error("Claude returned empty plan");
-
+  // Use router with planning task type for optimal model selection
   try {
-    return JSON.parse(text);
-  } catch (e) {
-    const err = e as Error;
-    throw new Error(`Claude returned non-JSON output: ${err.message}`);
+    const response = await routeModelRequest(planPrompt, "planning", {
+      maxTokens: 800,
+      temperature: 0,
+    });
+
+    const text = response.text;
+    if (!text) throw new Error("Router returned empty plan");
+
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      const err = e as Error;
+      throw new Error(`Router returned non-JSON output: ${err.message}`);
+    }
+  } catch (routerError) {
+    // Fallback to direct Anthropic call if router fails
+    if (!process.env.ANTHROPIC_API_KEY) {
+      throw new Error("Missing ANTHROPIC_API_KEY");
+    }
+
+    const msg = await anthropic.messages.create({
+      model: process.env.ANTHROPIC_PLAN_MODEL ?? "claude-3-5-sonnet-latest",
+      max_tokens: 800,
+      temperature: 0,
+      messages: [
+        {
+          role: "user",
+          content: planPrompt,
+        },
+      ],
+    });
+
+    const text = extractText((msg as any).content);
+    if (!text) throw new Error("Claude returned empty plan");
+
+    try {
+      return JSON.parse(text);
+    } catch (e) {
+      const err = e as Error;
+      throw new Error(`Claude returned non-JSON output: ${err.message}`);
+    }
   }
 }
+
